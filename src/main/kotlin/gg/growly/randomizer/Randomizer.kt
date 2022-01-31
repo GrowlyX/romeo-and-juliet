@@ -139,6 +139,9 @@ object Randomizer
                 current = value
             } else
             {
+                if (value.first().isLowerCase())
+                    continue
+
                 quoteMappings[current]?.add(value)
                 totalQuotes++
             }
