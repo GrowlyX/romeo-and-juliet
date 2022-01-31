@@ -51,8 +51,8 @@ object Randomizer
 
         val description = mutableListOf<String>()
         description.add("")
-        description.add("Who said this?")
-        description.add(quote)
+        description.add("${Color.YELLOW}Who said this?")
+        description.add("${Color.WHITE}$quote")
         description.add("")
 
         randomSpeakers.forEachIndexed { index, random ->
@@ -65,11 +65,13 @@ object Randomizer
 
         if (response.equals(speaker, true))
         {
-            println("✔ You got it correct!")
+            println("${Color.GREEN}✔ You got it correct!")
         } else
         {
-            println("❌ Wrong! Correct answer: $speaker")
+            println("${Color.RED}❌ Wrong! Correct answer: $speaker")
         }
+
+        description.add("")
     }
 
     private fun parseText(unparsed: List<String>)
