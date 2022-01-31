@@ -58,18 +58,20 @@ object Randomizer
             .randomOrNull() ?: stop()
 
         val randomSpeakers = quoteMappings.keys
-            .filter { it != speaker }.take(3)
+            .filter { it != speaker }
+            .shuffled().take(3)
             .toMutableList()
 
         randomSpeakers.add(speaker)
+        randomSpeakers.shuffle()
 
         val description = mutableListOf<String>()
         description.add("")
         description.add("${Color.YELLOW}Who said this?")
-        description.add("${Color.CYAN} $quote${Color.RESET}")
+        description.add("${Color.CYAN}$quote${Color.RESET}")
         description.add("")
 
-        randomSpeakers.shuffled()
+        randomSpeakers
             .forEachIndexed { index, random ->
                 description.add("#${index + 1}. $random")
             }
@@ -78,13 +80,32 @@ object Randomizer
 
         val response = description.response()
 
-        if (response.equals(speaker, true))
+        if (response.toIntOrNull() != null)
         {
-            println("${Color.GREEN}✔ You got it correct!"); correct++
-        }
-        else
+            try
+            {
+                if (randomSpeakers[response.toInt() - 1] == speaker)
+                {
+                    println("${Color.GREEN}✔ You got it correct!"); correct++
+                }
+                else
+                {
+                    println("${Color.RED}❌ Wrong! Correct answer: $speaker")
+                }
+            } catch (e: Exception)
+            {
+                println("${Color.RED}❌ Wrong! Correct answer: $speaker")
+            }
+        } else
         {
-            println("${Color.RED}❌ Wrong! Correct answer: $speaker");
+            if (response.equals(speaker, true))
+            {
+                println("${Color.GREEN}✔ You got it correct!"); correct++
+            }
+            else
+            {
+                println("${Color.RED}❌ Wrong! Correct answer: $speaker")
+            }
         }
 
         practiced.add(quote.toString())

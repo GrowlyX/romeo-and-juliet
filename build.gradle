@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
 }
 
@@ -7,7 +8,7 @@ group 'gg.growly.randomizer'
 version '1.0-SNAPSHOT'
 
 application {
-    mainClassName "gg.growly.randomizer.RandomizerKt"
+    mainClassName "gg.growly.randomizer.Randomizer"
 }
 
 repositories {
@@ -15,6 +16,11 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.code.gson:gson:2.8.9'
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 }
+
+shadowJar {
+    archiveName "randomizer.jar"
+}
+
+tasks.build.dependsOn(shadowJar)
