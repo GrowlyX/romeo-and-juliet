@@ -6,6 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.stream.Collectors
 import kotlin.concurrent.thread
+import kotlin.system.exitProcess
 
 /**
  * @author GrowlyX
@@ -15,6 +16,11 @@ object Randomizer
 {
     private val quoteMappings =
         mutableMapOf<String, MutableList<String>>()
+
+    private val practiced = mutableListOf<String>()
+
+    private var correct = 0
+    private var totalQuotes = 0
 
     @JvmStatic
     fun main(args: Array<String>)
@@ -34,30 +40,39 @@ object Randomizer
         }
     }
 
+    private fun stop()
+    {
+        println("${Color.GREEN}You're done! You got a ${(correct / totalQuotes) * 100}%.")
+        exitProcess(0)
+    }
+
     private fun pollInput()
     {
         val mapping = quoteMappings
             .entries.random()
 
         val speaker = mapping.key
-        val quote = mapping.value.random()
+
+        val quote = mapping.value
+            .filter { !practiced.contains(it) }
+            .randomOrNull() ?: stop()
 
         val randomSpeakers = quoteMappings.keys
             .filter { it != speaker }.take(3)
-            .toMutableList().also {
-                it.add(speaker)
-                it.shuffle()
-            }
+            .toMutableList()
+
+        randomSpeakers.add(speaker)
 
         val description = mutableListOf<String>()
         description.add("")
         description.add("${Color.YELLOW}Who said this?")
-        description.add("${Color.WHITE}$quote")
+        description.add("${Color.CYAN} $quote${Color.RESET}")
         description.add("")
 
-        randomSpeakers.forEachIndexed { index, random ->
-            description.add("#${index + 1}. $random")
-        }
+        randomSpeakers.shuffled()
+            .forEachIndexed { index, random ->
+                description.add("#${index + 1}. $random")
+            }
 
         description.add("")
 
@@ -65,13 +80,16 @@ object Randomizer
 
         if (response.equals(speaker, true))
         {
-            println("${Color.GREEN}✔ You got it correct!")
-        } else
+            println("${Color.GREEN}✔ You got it correct!"); correct++
+        }
+        else
         {
-            println("${Color.RED}❌ Wrong! Correct answer: $speaker")
+            println("${Color.RED}❌ Wrong! Correct answer: $speaker");
         }
 
-        description.add("")
+        practiced.add(quote.toString())
+
+        println("${Color.YELLOW}You've practiced ${practiced.size}/${totalQuotes} quotes.")
     }
 
     private fun parseText(unparsed: List<String>)
@@ -95,13 +113,13 @@ object Randomizer
 
             if (startIndex == index)
             {
-                quoteMappings[value] ?:
-                quoteMappings.put(value, mutableListOf())
+                quoteMappings[value] ?: quoteMappings.put(value, mutableListOf())
 
                 current = value
             } else
             {
                 quoteMappings[current]?.add(value)
+                totalQuotes++
             }
         }
     }
