@@ -47,6 +47,10 @@ object Randomizer
             exitProcess(0)
         }
 
+        // test doesn't have this
+        quoteMappings.remove("Gregory")
+        quoteMappings.remove("Sampson")
+
         while (true)
             pollInput()
     }
