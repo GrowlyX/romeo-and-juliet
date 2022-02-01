@@ -25,19 +25,31 @@ object Randomizer
     @JvmStatic
     fun main(args: Array<String>)
     {
-        val act = "What act would you like to cover?".response()
-        val scene = "What scene would you like to cover?".response()
+        println("\n${Color.GREEN_BOLD}Welcome to the Romeo & Juliet Quote Game!")
+        println("${Color.YELLOW}We currently cover act 1, scene 1.\n")
 
-        val unparsed = Files
-            .lines(Paths.get("$act-$scene.txt"))
-            .collect(Collectors.toList())
+        val act = "${Color.CYAN}What act would you like to cover?".response()
+        val scene = "${Color.CYAN}What scene would you like to cover?".response()
 
-        parseText(unparsed)
+        val start = System.currentTimeMillis()
+        println("${Color.YELLOW}Loading quotes for act $act scene $scene...")
 
-        thread {
-            while (true)
-                pollInput()
+        try
+        {
+            val unparsed = Files
+                .lines(Paths.get("$act-$scene.txt"))
+                .collect(Collectors.toList())
+
+            parseText(unparsed)
+            println("${Color.GREEN}Loaded quotes in ${System.currentTimeMillis() - start}ms!")
+        } catch (exception: Exception)
+        {
+            println("${Color.RED}Sorry, we don't have quote mappings for this act-scene pair. :(")
+            exitProcess(0)
         }
+
+        while (true)
+            pollInput()
     }
 
     private fun stop()
@@ -55,7 +67,13 @@ object Randomizer
 
         val quote = mapping.value
             .filter { !practiced.contains(it) }
-            .randomOrNull() ?: stop()
+            .randomOrNull()
+
+        if (quote == null)
+        {
+            pollInput()
+            return
+        }
 
         val randomSpeakers = quoteMappings.keys
             .filter { it != speaker }
@@ -140,6 +158,9 @@ object Randomizer
             } else
             {
                 if (value.first().isLowerCase())
+                    continue
+
+                if (value.length < 10)
                     continue
 
                 quoteMappings[current]?.add(value)
