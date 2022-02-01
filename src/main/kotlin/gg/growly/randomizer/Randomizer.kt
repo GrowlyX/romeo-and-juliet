@@ -5,7 +5,6 @@ import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.stream.Collectors
-import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 /**
@@ -62,6 +61,9 @@ object Randomizer
     {
         val mapping = quoteMappings
             .entries.random()
+
+        if (totalQuotes == practiced.size)
+            stop()
 
         val speaker = mapping.key
 
