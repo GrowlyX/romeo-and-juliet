@@ -133,14 +133,7 @@ object Randomizer
         val speaker = mapping.key
 
         val quote = mapping.value
-            .filter { !practiced.contains(it) }
-            .randomOrNull()
-
-        if (quote == null)
-        {
-            pollInput()
-            return
-        }
+            .random()
 
         val randomSpeakers = quoteMappings.keys
             .filter { it != speaker }
