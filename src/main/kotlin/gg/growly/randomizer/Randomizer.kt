@@ -1,9 +1,13 @@
 package gg.growly.randomizer
 
+import gg.growly.katoot.question.Question
+import gg.growly.katoot.question.QuestionChoice
+import gg.growly.katoot.quiz.Quizzes
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.UUID
 import java.util.stream.Collectors
 import kotlin.system.exitProcess
 
@@ -30,16 +34,56 @@ object Randomizer
         val act = "${Color.CYAN}What act would you like to cover?".response()
         val scene = "${Color.CYAN}What scene would you like to cover?".response()
 
+        val useKahoot = try
+        {
+            UUID.fromString(
+                "${Color.RED}Would you like to use kahoot? If yes, what's the game id?".response()
+            )
+        } catch (ignored: Exception) {
+            null
+        }
+
         val start = System.currentTimeMillis()
         println("${Color.YELLOW}Loading quotes for act $act scene $scene...")
 
         try
         {
-            val unparsed = Files
-                .lines(Paths.get("$act-$scene.txt"))
-                .collect(Collectors.toList())
+            if (useKahoot == null)
+            {
+                val unparsed = Files
+                    .lines(Paths.get("$act-$scene.txt"))
+                    .collect(Collectors.toList())
 
-            parseText(unparsed)
+                parseText(unparsed)
+            } else
+            {
+                val quiz = Quizzes.byGameId(useKahoot)!!
+
+                val mappings =
+                    mutableMapOf<String, MutableList<Pair<Question, QuestionChoice>>>()
+
+                for (question in quiz.questions)
+                {
+                    val choice = question
+                        .getFirstCorrectChoice()
+
+                    mappings.putIfAbsent(choice.answer, mutableListOf())
+
+                    mappings[choice.answer]
+                        ?.apply { add(Pair(question, choice)) }
+                }
+
+                for (mapping in mappings)
+                {
+                    quoteMappings.putIfAbsent(mapping.key, mutableListOf())
+
+                    quoteMappings[mapping.key]?.apply {
+                        for (pair in mapping.value)
+                            add(pair.first.value)
+                    }
+                }
+            }
+
             println("${Color.GREEN}Loaded quotes in ${System.currentTimeMillis() - start}ms!")
         } catch (exception: Exception)
         {
@@ -66,7 +110,10 @@ object Randomizer
         val mapping = quoteMappings
             .entries.random()
 
-        if (totalQuotes == practiced.size)
+        if (
+            totalQuotes == practiced.size &&
+            practiced.size != 0
+        )
             stop()
 
         val speaker = mapping.key
