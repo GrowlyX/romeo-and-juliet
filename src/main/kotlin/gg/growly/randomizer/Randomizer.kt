@@ -79,7 +79,10 @@ object Randomizer
 
                     quoteMappings[mapping.key]?.apply {
                         for (pair in mapping.value)
+                        {
                             add(pair.first.value)
+                            totalQuotes++
+                        }
                     }
                 }
             }
@@ -107,8 +110,19 @@ object Randomizer
 
     private fun pollInput()
     {
-        val mapping = quoteMappings
-            .entries.random()
+        val mapping = quoteMappings.entries
+            .filter {
+                it.value.any { str ->
+                    !practiced.contains(str)
+                }
+            }
+            .randomOrNull()
+
+        if (mapping == null)
+        {
+            stop()
+            return
+        }
 
         if (
             totalQuotes == practiced.size &&
